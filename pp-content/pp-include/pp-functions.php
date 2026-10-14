@@ -14,8 +14,9 @@
     
     function pp_site_url($type = "Full") {
         // Detect protocol
-        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' 
-                    || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'
+                    || $_SERVER['SERVER_PORT'] == 443
+                    || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https') ? "https://" : "http://";
 
         // Full host with subdomain
         $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
@@ -196,7 +197,7 @@
     function setsCookie($cookieName, $cookieValue, $days = 365) {
         $expiryTime = time() + ($days * 24 * 60 * 60);
     
-        $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
+        $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443 || ($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
     
         setcookie($cookieName, $cookieValue, [
             'expires' => $expiryTime,
@@ -906,7 +907,7 @@
                 [
                     'type'     => 'Merchant',
                     'priority' => 80,
-                    'pattern'  => '/You have received payment Tk ([\d,.]+) from (\d+)\.(?:\s*Ref[:\-]?\s*(\S+))? Fee Tk ([\d,.]+)\. Balance Tk ([\d,.]+)\. TrxID ([A-Z0-9]+) at ([\d\/:\s]+)/i',
+                    'pattern'  => '/You have received payment Tk ([\d,.]+) from ([0-9X]+)\.(?:\s*Ref[:\-]?\s*(\S+))? Fee Tk ([\d,.]+)\. Balance Tk ([\d,.]+)\. TrxID ([A-Z0-9]+) at ([\d\/:\s]+)/i',
                     'map'      => ['amount', 'sender', 'ref', 'fee', 'balance', 'trxid', 'datetime']
                 ],
 
